@@ -1,7 +1,9 @@
 package parkinglot
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/umerthow/parking-lot-go/model"
 )
@@ -13,6 +15,7 @@ type ParkingLot struct {
 	spots   [][][]model.ParkingSpot
 }
 
+// Init Parking Lot
 func NewParkingLot(floors, rows, columns int) (*ParkingLot, error) {
 	if floors < 1 || floors > 8 {
 		return nil, errors.New("invalid number of floors (1-8)")
@@ -26,10 +29,45 @@ func NewParkingLot(floors, rows, columns int) (*ParkingLot, error) {
 
 	spots := make([][][]model.ParkingSpot, floors)
 
+	for f := 0; f < floors; f++ {
+		spots[f] = make([][]model.ParkingSpot, rows)
+		for r := 0; r < rows; r++ {
+			spots[f][r] = make([]model.ParkingSpot, columns)
+			for c := 0; c < columns; c++ {
+				// Default to inactive spot
+				spots[f][r][c] = model.ParkingSpot{
+					Floor:      f + 1,
+					Row:        r + 1,
+					Column:     c + 1,
+					Type:       model.Inactive,
+					IsOccupied: false,
+				}
+			}
+		}
+	}
+
 	return &ParkingLot{
 		floors:  floors,
 		rows:    rows,
 		columns: columns,
 		spots:   spots,
 	}, nil
+}
+
+func (pl *ParkingLot) SetSpotType(floor, row, column int, spotType model.VehicleType) error {
+	if floor < 1 || floor > pl.floors {
+		return errors.New("invalid floor number")
+	}
+	if row < 1 || row > pl.rows {
+		return errors.New("invalid row number")
+	}
+	if column < 1 || column > pl.columns {
+		return errors.New("invalid column number")
+	}
+
+	pl.spots[floor-1][row-1][column-1].Type = spotType
+
+	pls, _ := json.MarshalIndent(pl.spots, "", "/")
+	fmt.Println("spot", string(pls))
+	return nil
 }
