@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/umerthow/parking-lot-go/model"
@@ -73,7 +75,7 @@ func (pl *ParkingLot) SetSpotType(floor, row, column int, spotType model.Vehicle
 	return nil
 }
 
-func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) (string, error) {
+func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) (spotId string, err error) {
 	for f := 0; f < pl.floors; f++ {
 		for r := 0; r < pl.rows; r++ {
 			for c := 0; c < pl.columns; c++ {
@@ -90,4 +92,38 @@ func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) 
 	}
 
 	return "", errors.New("no available parking spot")
+}
+
+func (pl *ParkingLot) UnPark(spotId string, vehicleNumber string) error {
+	floor, row, column, err := pl.parseSpotId(spotId)
+	if err != nil {
+		return err
+	}
+
+	spot := &pl.spots[floor-1][row-1][column-1]
+	if !spot.IsOccupied || spot.VehicleNumber != vehicleNumber {
+		return errors.New("vehicle not found at specified spot")
+	}
+
+	spot.IsOccupied = false
+	spot.VehicleNumber = ""
+
+	return nil
+}
+
+func (pl *ParkingLot) parseSpotId(spotID string) (floor, row, column int, err error) {
+	parts := strings.Split(spotID, "-")
+	if len(parts) != 3 {
+		return 0, 0, 0, errors.New("invalid spot ID format")
+	}
+
+	floor, err1 := strconv.Atoi(parts[0])
+	row, err2 := strconv.Atoi(parts[1])
+	column, err3 := strconv.Atoi(parts[2])
+
+	if err1 != nil || err2 != nil || err3 != nil {
+		return 0, 0, 0, errors.New("invalid spot ID format")
+	}
+
+	return floor, row, column, nil
 }
