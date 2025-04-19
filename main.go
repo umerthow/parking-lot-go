@@ -22,5 +22,11 @@ func main() {
 		panic(err)
 	}
 
+	spot, err := pl.Park(model.Automobile, "B1284SS")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Spot Parked Occupied at %s", spot)
+
 	fmt.Println("hello from go")
 }

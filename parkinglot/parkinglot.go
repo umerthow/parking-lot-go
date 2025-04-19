@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/umerthow/parking-lot-go/model"
 )
@@ -70,4 +71,23 @@ func (pl *ParkingLot) SetSpotType(floor, row, column int, spotType model.Vehicle
 	pls, _ := json.MarshalIndent(pl.spots, "", "/")
 	fmt.Println("spot", string(pls))
 	return nil
+}
+
+func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) (string, error) {
+	for f := 0; f < pl.floors; f++ {
+		for r := 0; r < pl.rows; r++ {
+			for c := 0; c < pl.columns; c++ {
+				spot := &pl.spots[f][r][c]
+				if spot.Type == vehicleType && !spot.IsOccupied {
+					spot.IsOccupied = true
+					spot.VehicleNumber = vehicleNumber
+					spot.OccupiedAt = time.Now()
+
+					return fmt.Sprintf("%d-%d-%d", spot.Floor, spot.Row, spot.Column), nil
+				}
+			}
+		}
+	}
+
+	return "", errors.New("no available parking spot")
 }

@@ -8,7 +8,7 @@ const (
 	Bicycle    VehicleType = "B-1"
 	Motorcycle VehicleType = "M-1"
 	Automobile VehicleType = "A-1"
-	Inactive   VehicleType = "X-0"
+	Inactive   VehicleType = "0-0"
 )
 
 type ParkingSpot struct {
