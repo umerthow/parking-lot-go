@@ -142,3 +142,18 @@ func (pl *ParkingLot) AvailableSpots(vehicleType model.VehicleType) []string {
 	}
 	return available
 }
+
+func (pl *ParkingLot) SearchParkVehicle(vehicleNumber string) (spot model.ParkingSpot, err error) {
+	for f := 0; f < pl.floors; f++ {
+		for r := 0; r < pl.rows; r++ {
+			for c := 0; c < pl.columns; c++ {
+				spot := pl.spots[f][r][c]
+				if spot.VehicleNumber == vehicleNumber && spot.IsOccupied {
+					return spot, nil
+				}
+			}
+		}
+	}
+
+	return spot, errors.New("vehicle not found")
+}

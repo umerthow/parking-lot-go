@@ -31,6 +31,12 @@ func main() {
 	}
 	fmt.Println("Spot Parked Occupied at %s", spotId)
 
+	spotVehicle, err := pl.SearchParkVehicle("B1284ST")
+	if err != nil {
+		fmt.Println("SearchParkVehicle failed:", err)
+	}
+	fmt.Println("spotVehicle", spotVehicle)
+
 	// get available spots
 	availableSpots := pl.AvailableSpots(model.Automobile)
 	fmt.Println("Available Spots - ", availableSpots)
