@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/umerthow/parking-lot-go/model"
@@ -16,6 +17,7 @@ type ParkingLot struct {
 	columns int
 	spots   [][][]model.ParkingSpot
 	history *VehicleHistory
+	mu      sync.RWMutex
 }
 
 // Init Parking Lot
@@ -59,6 +61,9 @@ func NewParkingLot(floors, rows, columns int) (*ParkingLot, error) {
 }
 
 func (pl *ParkingLot) SetSpotType(floor, row, column int, spotType model.VehicleType) error {
+	pl.mu.Lock()
+	defer pl.mu.Unlock()
+
 	if floor < 1 || floor > pl.floors {
 		return errors.New("invalid floor number")
 	}
@@ -75,6 +80,9 @@ func (pl *ParkingLot) SetSpotType(floor, row, column int, spotType model.Vehicle
 }
 
 func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) (spotId string, err error) {
+	pl.mu.Lock()
+	defer pl.mu.Unlock()
+
 	for f := 0; f < pl.floors; f++ {
 		for r := 0; r < pl.rows; r++ {
 			for c := 0; c < pl.columns; c++ {
@@ -97,6 +105,9 @@ func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) 
 }
 
 func (pl *ParkingLot) UnPark(spotId string, vehicleNumber string) error {
+	pl.mu.Lock()
+	defer pl.mu.Unlock()
+
 	floor, row, column, err := pl.parseSpotId(spotId)
 	if err != nil {
 		return err
@@ -134,6 +145,9 @@ func (pl *ParkingLot) parseSpotId(spotID string) (floor, row, column int, err er
 }
 
 func (pl *ParkingLot) AvailableSpots(vehicleType model.VehicleType) []string {
+	pl.mu.RLock()
+	defer pl.mu.RUnlock()
+
 	var available []string
 	for f := 0; f < pl.floors; f++ {
 		for r := 0; r < pl.rows; r++ {
@@ -149,6 +163,9 @@ func (pl *ParkingLot) AvailableSpots(vehicleType model.VehicleType) []string {
 }
 
 func (pl *ParkingLot) SearchParkVehicle(vehicleNumber string) (spot model.ParkingSpot, err error) {
+	pl.mu.RLock()
+	defer pl.mu.RUnlock()
+
 	for f := 0; f < pl.floors; f++ {
 		for r := 0; r < pl.rows; r++ {
 			for c := 0; c < pl.columns; c++ {
