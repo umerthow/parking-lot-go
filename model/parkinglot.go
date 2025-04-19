@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type VehicleType string
 
@@ -19,4 +22,12 @@ type ParkingSpot struct {
 	IsOccupied    bool
 	VehicleNumber string
 	OccupiedAt    time.Time
+}
+
+func (ps ParkingSpot) ID() string {
+	return formatSpotID(ps.Floor, ps.Row, ps.Column)
+}
+
+func formatSpotID(floor, row, column int) string {
+	return fmt.Sprintf("%d-%d-%d", floor, row, column)
 }

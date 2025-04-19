@@ -85,7 +85,7 @@ func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) 
 					spot.VehicleNumber = vehicleNumber
 					spot.OccupiedAt = time.Now()
 
-					return fmt.Sprintf("%d-%d-%d", spot.Floor, spot.Row, spot.Column), nil
+					return spot.ID(), nil
 				}
 			}
 		}
