@@ -1,7 +1,6 @@
 package parkinglot
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -16,6 +15,7 @@ type ParkingLot struct {
 	rows    int
 	columns int
 	spots   [][][]model.ParkingSpot
+	history *VehicleHistory
 }
 
 // Init Parking Lot
@@ -54,6 +54,7 @@ func NewParkingLot(floors, rows, columns int) (*ParkingLot, error) {
 		rows:    rows,
 		columns: columns,
 		spots:   spots,
+		history: NewVehicleHistory(),
 	}, nil
 }
 
@@ -70,8 +71,6 @@ func (pl *ParkingLot) SetSpotType(floor, row, column int, spotType model.Vehicle
 
 	pl.spots[floor-1][row-1][column-1].Type = spotType
 
-	pls, _ := json.MarshalIndent(pl.spots, "", "/")
-	fmt.Println("spot", string(pls))
 	return nil
 }
 
@@ -84,6 +83,9 @@ func (pl *ParkingLot) Park(vehicleType model.VehicleType, vehicleNumber string) 
 					spot.IsOccupied = true
 					spot.VehicleNumber = vehicleNumber
 					spot.OccupiedAt = time.Now()
+
+					// add vehicle log history
+					pl.history.Record(vehicleNumber, *spot)
 
 					return spot.ID(), nil
 				}
@@ -106,6 +108,9 @@ func (pl *ParkingLot) UnPark(spotId string, vehicleNumber string) error {
 	}
 
 	spot.IsOccupied = false
+	// add vehicle log history
+	pl.history.Record(vehicleNumber, *spot)
+
 	spot.VehicleNumber = ""
 
 	return nil
@@ -156,4 +161,16 @@ func (pl *ParkingLot) SearchParkVehicle(vehicleNumber string) (spot model.Parkin
 	}
 
 	return spot, errors.New("vehicle not found")
+}
+
+func (pl *ParkingLot) Search(vehicleNumber string) (string, error) {
+	spot, err := pl.SearchParkVehicle(vehicleNumber)
+	if err == nil {
+		return spot.ID(), nil
+	} else {
+		fmt.Println("==> getting from logginh history..")
+		spotHistory, _ := pl.history.Get(vehicleNumber)
+		return spotHistory[len(spotHistory)-1].ID(), nil
+	}
+
 }

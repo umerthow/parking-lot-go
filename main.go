@@ -49,6 +49,16 @@ func main() {
 	}
 	fmt.Println("Unparking success:", spotId)
 
-	fmt.Println()
+	_, err = pl.Park(model.Automobile, "B1284SD")
+	spotIdS, err := pl.Park(model.Automobile, "B1284SS")
+	err = pl.UnPark(spotIdS, "B1284SS")
+
+	lastSpot, err := pl.Search("B1284SS")
+	if err != nil {
+		fmt.Println("Search failed:", err)
+	} else {
+		fmt.Println("Last parked at:", lastSpot)
+	}
+
 	fmt.Println("hello from go")
 }
