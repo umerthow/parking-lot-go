@@ -127,3 +127,18 @@ func (pl *ParkingLot) parseSpotId(spotID string) (floor, row, column int, err er
 
 	return floor, row, column, nil
 }
+
+func (pl *ParkingLot) AvailableSpots(vehicleType model.VehicleType) []string {
+	var available []string
+	for f := 0; f < pl.floors; f++ {
+		for r := 0; r < pl.rows; r++ {
+			for c := 0; c < pl.columns; c++ {
+				spot := pl.spots[f][r][c]
+				if spot.Type == vehicleType && !spot.IsOccupied {
+					available = append(available, spot.ID())
+				}
+			}
+		}
+	}
+	return available
+}
